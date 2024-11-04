@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -37,17 +38,36 @@ func init() {
 	RootCommand.AddCommand(CheckCommand)
 }
 
+// Better Logic
 func checkWebsite(url string) {
+	start := time.Now()
 	resp, err := http.Get(url)
+	duration := time.Since(start)
+
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusOK {
-		fmt.Println("Website is up:", url)
+	if resp.StatusCode == http.StatusOK && duration < 2*time.Second { // threshold of 2 seconds
+		fmt.Printf("Website is up: %s (Response time: %v)\n", url, duration)
 	} else {
-		fmt.Printf("Website is down: %s (Status Code: %d)\n", url, resp.StatusCode)
+		fmt.Printf("Website is down: %s (Status Code: %d, Response time: %v)\n", url, resp.StatusCode, duration)
 	}
 }
+
+// func checkWebsite(url string) {
+// 	resp, err := http.Get(url)
+// 	if err != nil {
+// 		fmt.Println("Error:", err)
+// 		return
+// 	}
+// 	defer resp.Body.Close()
+
+// 	if resp.StatusCode == http.StatusOK {
+// 		fmt.Println("Website is up:", url)
+// 	} else {
+// 		fmt.Printf("Website is down: %s (Status Code: %d)\n", url, resp.StatusCode)
+// 	}
+// }
